@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useRef, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Button } from "../components/ui/button";
@@ -74,8 +76,9 @@ export default function ChatApp() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  // Ref for scrolling to bottom of messages
+  // Refs for scrolling to bottom of messages and focusing input
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null); // New ref for the input field
 
   // Save personas to localStorage when they change
   useEffect(() => {
@@ -125,6 +128,20 @@ export default function ChatApp() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Add keyboard shortcut for switching personas
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Alt+S or Ctrl+S to switch personas
+      if ((e.altKey || e.ctrlKey) && e.key === "s") {
+        e.preventDefault(); // Prevent saving the page
+        switchPersona();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activePersona]); // Re-add the event listener when activePersona changes
+
   // Handle sending a new message
   const handleSendMessage = () => {
     if (inputText.trim() === "") return;
@@ -153,6 +170,11 @@ export default function ChatApp() {
         activePersona === personas[0].id ? personas[1].id : personas[0].id
       );
       setIsTransitioning(false);
+
+      // Focus the input field after switching personas
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50); // Small delay to ensure the UI has updated
     }, 150);
   };
 
@@ -297,6 +319,9 @@ export default function ChatApp() {
         >
           <div className="flex items-center">
             <span className="font-medium text-lg">Dual Chat</span>
+            <div className="ml-2 text-xs bg-white/20 px-2 py-1 rounded-full">
+              Press Alt+S to switch
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
@@ -390,7 +415,7 @@ export default function ChatApp() {
                     Start a conversation!
                   </p>
                   <p className="text-sm mt-1 text-gray-500 dark:text-gray-400">
-                    Tap the switch button to change personas
+                    Tap the switch button or press Alt+S to change personas
                   </p>
 
                   <motion.div
@@ -556,6 +581,7 @@ export default function ChatApp() {
               </AvatarFallback>
             </Avatar>
             <Input
+              ref={inputRef} // Add the ref to the input
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder={`Message as ${currentPersona.name}...`}
