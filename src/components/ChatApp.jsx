@@ -1,50 +1,30 @@
-"use client";
+"use client"
 
-import { useState, useRef, useEffect } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
-import { Button } from "../components/ui/button";
-import { Card, CardContent, CardFooter } from "../components/ui/card";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "../components/ui/dialog";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../components/ui/tabs";
-import {
-  Send,
-  RefreshCw,
-  Settings,
-  Moon,
-  Sun,
-  Trash2,
-  Edit2,
-  ImageIcon,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useRef, useEffect } from "react"
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar"
+import { Button } from "../components/ui/button"
+import { Card, CardContent, CardFooter } from "../components/ui/card"
+import { Input } from "../components/ui/input"
+import { Label } from "../components/ui/label"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
+import { Send, RefreshCw, Settings, Moon, Sun, Trash2, Edit2, ImageIcon } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 
 export default function ChatApp() {
   // Load saved personas from localStorage or use defaults
   const getInitialPersonas = () => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("chatPersonas");
+      const saved = localStorage.getItem("chatPersonas")
       if (saved) {
-        return JSON.parse(saved);
+        return JSON.parse(saved)
       }
     }
 
     return [
       {
         id: "persona1",
-        name: "Dumb",
+        name: "Alex",
         avatar: "/placeholder-vibrant.svg",
         color: "bg-indigo-500",
         bgColor: "bg-indigo-50",
@@ -53,151 +33,155 @@ export default function ChatApp() {
       },
       {
         id: "persona2",
-        name: "Prime",
+        name: "Taylor",
         avatar: "/placeholder-normal.svg",
         color: "bg-rose-500",
         bgColor: "bg-rose-50",
         textColor: "text-rose-800",
         gradient: "from-rose-500 to-pink-500",
       },
-    ];
-  };
+    ]
+  }
 
   // State for messages, current persona, and input
-  const [personas, setPersonas] = useState(getInitialPersonas);
-  const [messages, setMessages] = useState([]);
-  const [activePersona, setActivePersona] = useState(personas[0].id);
-  const [inputText, setInputText] = useState("");
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [editingPersona, setEditingPersona] = useState(null);
-  const [editName, setEditName] = useState("");
-  const [editAvatar, setEditAvatar] = useState("");
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [personas, setPersonas] = useState(getInitialPersonas)
+  const [messages, setMessages] = useState([])
+  const [activePersona, setActivePersona] = useState(personas[0].id)
+  const [inputText, setInputText] = useState("")
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [darkMode, setDarkMode] = useState(false)
+  const [editingPersona, setEditingPersona] = useState(null)
+  const [editName, setEditName] = useState("")
+  const [editAvatar, setEditAvatar] = useState("")
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
   // Add a new state for the reset confirmation dialog
-  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false)
 
   // Refs for scrolling to bottom of messages and focusing input
-  const messagesEndRef = useRef(null);
-  const inputRef = useRef(null); // New ref for the input field
+  const messagesEndRef = useRef(null)
+  const inputRef = useRef(null) // New ref for the input field
 
   // Save personas to localStorage when they change
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("chatPersonas", JSON.stringify(personas));
+      localStorage.setItem("chatPersonas", JSON.stringify(personas))
     }
-  }, [personas]);
+  }, [personas])
 
   // Load saved messages from localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const savedMessages = localStorage.getItem("chatMessages");
+      const savedMessages = localStorage.getItem("chatMessages")
       if (savedMessages) {
         try {
-          const parsedMessages = JSON.parse(savedMessages);
+          const parsedMessages = JSON.parse(savedMessages)
           // Convert string timestamps back to Date objects
           const messagesWithDateObjects = parsedMessages.map((msg) => ({
             ...msg,
             timestamp: new Date(msg.timestamp),
-          }));
-          setMessages(messagesWithDateObjects);
+          }))
+          setMessages(messagesWithDateObjects)
         } catch (e) {
-          console.error("Error loading saved messages:", e);
+          console.error("Error loading saved messages:", e)
         }
       }
     }
-  }, []);
+  }, [])
 
   // Save messages to localStorage when they change
   useEffect(() => {
     if (typeof window !== "undefined" && messages.length > 0) {
-      localStorage.setItem("chatMessages", JSON.stringify(messages));
+      localStorage.setItem("chatMessages", JSON.stringify(messages))
     }
-  }, [messages]);
+  }, [messages])
 
   // Toggle dark mode
   useEffect(() => {
     if (darkMode) {
-      document.documentElement.classList.add("dark");
+      document.documentElement.classList.add("dark")
     } else {
-      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.remove("dark")
     }
-  }, [darkMode]);
+  }, [darkMode])
 
   // Scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
 
-  // Add keyboard shortcut for switching personas
+  // Add keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Alt+S or Ctrl+S to switch personas
-      if ((e.altKey || e.ctrlKey) && e.key === "s") {
-        e.preventDefault(); // Prevent saving the page
-        switchPersona();
+      // Ctrl+S to switch personas
+      if (e.ctrlKey && e.key === "s") {
+        e.preventDefault() // Prevent saving the page
+        switchPersona()
       }
-    };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activePersona]); // Re-add the event listener when activePersona changes
+      // Alt+S to clear chat
+      if (e.altKey && e.key === "s") {
+        e.preventDefault()
+        clearMessages()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [activePersona, messages]) // Include messages in the dependency array
 
   // Handle sending a new message
   const handleSendMessage = () => {
-    if (inputText.trim() === "") return;
+    if (inputText.trim() === "") return
 
     const newMessage = {
       id: Date.now().toString(),
       text: inputText,
       personaId: activePersona,
       timestamp: new Date(),
-    };
+    }
 
-    setMessages([...messages, newMessage]);
-    setInputText("");
-  };
+    setMessages([...messages, newMessage])
+    setInputText("")
+  }
 
   // Get persona details by ID
   const getPersonaById = (id) => {
-    return personas.find((p) => p.id === id) || personas[0];
-  };
+    return personas.find((p) => p.id === id) || personas[0]
+  }
 
   // Switch to the other persona with animation
   const switchPersona = () => {
-    setIsTransitioning(true);
+    setIsTransitioning(true)
     setTimeout(() => {
-      setActivePersona(
-        activePersona === personas[0].id ? personas[1].id : personas[0].id
-      );
-      setIsTransitioning(false);
+      setActivePersona(activePersona === personas[0].id ? personas[1].id : personas[0].id)
+      setIsTransitioning(false)
 
       // Focus the input field after switching personas
       setTimeout(() => {
-        inputRef.current?.focus();
-      }, 50); // Small delay to ensure the UI has updated
-    }, 150);
-  };
+        inputRef.current?.focus()
+      }, 50) // Small delay to ensure the UI has updated
+    }, 150)
+  }
 
   // Modify the clearMessages function to only clear messages
   const clearMessages = () => {
-    setMessages([]);
-    localStorage.removeItem("chatMessages");
-    setSettingsOpen(false);
-  };
+    setMessages([])
+    localStorage.removeItem("chatMessages")
+    setSettingsOpen(false)
+  }
 
   // Add a new function to reset everything (messages and personas)
   const resetEverything = () => {
     // Clear messages
-    setMessages([]);
-    localStorage.removeItem("chatMessages");
+    setMessages([])
+    localStorage.removeItem("chatMessages")
 
     // Reset personas to defaults
     const defaultPersonas = [
       {
         id: "persona1",
-        name: "Dumb",
+        name: "Alex",
         avatar: "/placeholder-vibrant.svg",
         color: "bg-indigo-500",
         bgColor: "bg-indigo-50",
@@ -206,72 +190,70 @@ export default function ChatApp() {
       },
       {
         id: "persona2",
-        name: "Prime",
+        name: "Taylor",
         avatar: "/placeholder-normal.svg",
         color: "bg-rose-500",
         bgColor: "bg-rose-50",
         textColor: "text-rose-800",
         gradient: "from-rose-500 to-pink-500",
       },
-    ];
+    ]
 
-    setPersonas(defaultPersonas);
-    localStorage.setItem("chatPersonas", JSON.stringify(defaultPersonas));
+    setPersonas(defaultPersonas)
+    localStorage.setItem("chatPersonas", JSON.stringify(defaultPersonas))
 
     // Close dialogs
-    setResetConfirmOpen(false);
-    setSettingsOpen(false);
-  };
+    setResetConfirmOpen(false)
+    setSettingsOpen(false)
+  }
 
   // Start editing a persona
   const startEditPersona = (persona) => {
-    setEditingPersona(persona);
-    setEditName(persona.name);
-    setEditAvatar(persona.avatar);
-    setSettingsOpen(false);
-    setEditDialogOpen(true);
-  };
+    setEditingPersona(persona)
+    setEditName(persona.name)
+    setEditAvatar(persona.avatar)
+    setSettingsOpen(false)
+    setEditDialogOpen(true)
+  }
 
   // Save edited persona
   const savePersona = () => {
-    if (!editingPersona) return;
+    if (!editingPersona) return
 
     const updatedPersonas = personas.map((p) =>
-      p.id === editingPersona.id
-        ? { ...p, name: editName, avatar: editAvatar }
-        : p
-    );
+      p.id === editingPersona.id ? { ...p, name: editName, avatar: editAvatar } : p,
+    )
 
-    setPersonas(updatedPersonas);
-    setEditingPersona(null);
-    setEditDialogOpen(false);
-  };
+    setPersonas(updatedPersonas)
+    setEditingPersona(null)
+    setEditDialogOpen(false)
+  }
 
   // Cancel editing
   const cancelEditing = () => {
-    setEditingPersona(null);
-    setEditDialogOpen(false);
-  };
+    setEditingPersona(null)
+    setEditDialogOpen(false)
+  }
 
   // Handle image upload
   const handleImageUpload = (file) => {
     return new Promise((resolve, reject) => {
       if (!file || !file.type.match("image.*")) {
-        reject(new Error("Please select an image file"));
-        return;
+        reject(new Error("Please select an image file"))
+        return
       }
 
-      const reader = new FileReader();
+      const reader = new FileReader()
       reader.onload = (event) => {
-        const dataUrl = event.target.result;
-        resolve(dataUrl);
-      };
+        const dataUrl = event.target.result
+        resolve(dataUrl)
+      }
       reader.onerror = () => {
-        reject(new Error("Failed to read the image"));
-      };
-      reader.readAsDataURL(file);
-    });
-  };
+        reject(new Error("Failed to read the image"))
+      }
+      reader.readAsDataURL(file)
+    })
+  }
 
   // Generate a random avatar
   const generateRandomAvatar = () => {
@@ -293,72 +275,65 @@ export default function ChatApp() {
       "open-peeps",
       "personas",
       "pixel-art",
-    ];
-    const style = styles[Math.floor(Math.random() * styles.length)];
-    const seed = Math.random().toString(36).substring(2, 8);
-    return `https://api.dicebear.com/7.x/${style}/svg?seed=${seed}`;
-  };
+    ]
+    const style = styles[Math.floor(Math.random() * styles.length)]
+    const seed = Math.random().toString(36).substring(2, 8)
+    return `https://api.dicebear.com/7.x/${style}/svg?seed=${seed}`
+  }
 
-  const currentPersona = getPersonaById(activePersona);
-  const otherPersona = getPersonaById(
-    activePersona === personas[0].id ? personas[1].id : personas[0].id
-  );
+  const currentPersona = getPersonaById(activePersona)
+  const otherPersona = getPersonaById(activePersona === personas[0].id ? personas[1].id : personas[0].id)
 
   // Format date for message groups
   const formatMessageDate = (date) => {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
 
     if (date.toDateString() === today.toDateString()) {
-      return "Today";
+      return "Today"
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return "Yesterday";
+      return "Yesterday"
     } else {
-      return date.toLocaleDateString(undefined, {
-        weekday: "long",
-        month: "short",
-        day: "numeric",
-      });
+      return date.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })
     }
-  };
+  }
 
   // Group messages by date
   const groupMessagesByDate = () => {
-    const groups = {};
+    const groups = {}
 
     messages.forEach((message) => {
-      const date = new Date(message.timestamp);
-      const dateString = date.toDateString();
+      const date = new Date(message.timestamp)
+      const dateString = date.toDateString()
 
       if (!groups[dateString]) {
         groups[dateString] = {
           date: date,
           messages: [],
-        };
+        }
       }
 
-      groups[dateString].messages.push(message);
-    });
+      groups[dateString].messages.push(message)
+    })
 
-    return Object.values(groups).sort((a, b) => a.date - b.date);
-  };
+    return Object.values(groups).sort((a, b) => a.date - b.date)
+  }
 
-  const messageGroups = groupMessagesByDate();
+  const messageGroups = groupMessagesByDate()
 
   return (
     <div
-      className={`flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300`}
+      className={`fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300`}
     >
       <Card className="w-full h-full max-w-md mx-auto shadow-xl overflow-hidden flex flex-col rounded-xl dark:bg-gray-800 dark:border-gray-700">
         {/* Header with gradient background */}
-        <div
-          className={`p-4 flex items-center justify-between bg-gradient-to-r ${currentPersona.gradient} text-white`}
-        >
+        <div className={`p-4 flex items-center justify-between bg-gradient-to-r ${currentPersona.gradient} text-white`}>
           <div className="flex items-center">
-            <span className="font-medium text-lg">meroKura</span>
-            <div className="ml-2 text-xs bg-white/20 px-2 py-1 rounded-full">
-              Press Ctrl+S to switch
+            <span className="font-medium text-lg">Dual Chat</span>
+            <div className="flex ml-2 gap-1">
+              <div className="text-xs bg-white/20 px-2 py-1 rounded-full">Ctrl+S: switch</div>
+              <div className="text-xs bg-white/20 px-2 py-1 rounded-full">Alt+S: clear chat</div>
             </div>
           </div>
 
@@ -370,11 +345,7 @@ export default function ChatApp() {
               className="text-white hover:bg-white/20 rounded-full"
               onClick={() => setDarkMode(!darkMode)}
             >
-              {darkMode ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
+              {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
 
             {/* Settings button */}
@@ -390,13 +361,8 @@ export default function ChatApp() {
             {/* Active persona indicator */}
             <div className="flex items-center bg-white/20 rounded-full px-2 py-1">
               <Avatar className="h-6 w-6 mr-1">
-                <AvatarImage
-                  src={currentPersona.avatar}
-                  alt={currentPersona.name}
-                />
-                <AvatarFallback className={currentPersona.color}>
-                  {currentPersona.name.charAt(0)}
-                </AvatarFallback>
+                <AvatarImage src={currentPersona.avatar} alt={currentPersona.name} />
+                <AvatarFallback className={currentPersona.color}>{currentPersona.name.charAt(0)}</AvatarFallback>
               </Avatar>
               <span className="text-xs font-medium">{currentPersona.name}</span>
             </div>
@@ -414,46 +380,24 @@ export default function ChatApp() {
               >
                 <div className="text-center">
                   <div className="flex space-x-4 mb-4 justify-center">
-                    <motion.div
-                      className="flex flex-col items-center"
-                      whileHover={{ scale: 1.05 }}
-                    >
+                    <motion.div className="flex flex-col items-center" whileHover={{ scale: 1.05 }}>
                       <Avatar className="h-16 w-16 mb-2 ring-2 ring-white dark:ring-gray-700 shadow-lg">
-                        <AvatarImage
-                          src={personas[0].avatar}
-                          alt={personas[0].name}
-                        />
-                        <AvatarFallback className={personas[0].color}>
-                          {personas[0].name.charAt(0)}
-                        </AvatarFallback>
+                        <AvatarImage src={personas[0].avatar} alt={personas[0].name} />
+                        <AvatarFallback className={personas[0].color}>{personas[0].name.charAt(0)}</AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium">
-                        {personas[0].name}
-                      </span>
+                      <span className="text-sm font-medium">{personas[0].name}</span>
                     </motion.div>
-                    <motion.div
-                      className="flex flex-col items-center"
-                      whileHover={{ scale: 1.05 }}
-                    >
+                    <motion.div className="flex flex-col items-center" whileHover={{ scale: 1.05 }}>
                       <Avatar className="h-16 w-16 mb-2 ring-2 ring-white dark:ring-gray-700 shadow-lg">
-                        <AvatarImage
-                          src={personas[1].avatar}
-                          alt={personas[1].name}
-                        />
-                        <AvatarFallback className={personas[1].color}>
-                          {personas[1].name.charAt(0)}
-                        </AvatarFallback>
+                        <AvatarImage src={personas[1].avatar} alt={personas[1].name} />
+                        <AvatarFallback className={personas[1].color}>{personas[1].name.charAt(0)}</AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium">
-                        {personas[1].name}
-                      </span>
+                      <span className="text-sm font-medium">{personas[1].name}</span>
                     </motion.div>
                   </div>
-                  <p className="font-medium dark:text-gray-200">
-                    Start a conversation!
-                  </p>
+                  <p className="font-medium dark:text-gray-200">Start a conversation!</p>
                   <p className="text-sm mt-1 text-gray-500 dark:text-gray-400">
-                    Tap the switch button or press Alt+S to change personas
+                    Tap the switch button or press Ctrl+S to change personas
                   </p>
 
                   <motion.div
@@ -463,8 +407,7 @@ export default function ChatApp() {
                     transition={{ delay: 0.5 }}
                   >
                     <p className="text-sm text-center text-gray-600 dark:text-gray-300">
-                      💡 <strong>Tip:</strong> You can customize both profiles
-                      in the settings
+                      💡 <strong>Tip:</strong> You can customize both profiles in the settings
                     </p>
                   </motion.div>
                 </div>
@@ -481,83 +424,45 @@ export default function ChatApp() {
 
                     <div className="space-y-3">
                       {group.messages.map((message, messageIndex) => {
-                        const persona = getPersonaById(message.personaId);
+                        const persona = getPersonaById(message.personaId)
                         // Always position persona1 on right, persona2 on left
-                        const isPersona1 = message.personaId === personas[0].id;
+                        const isPersona1 = message.personaId === personas[0].id
 
                         // Check if this is a consecutive message from the same persona
                         const isConsecutive =
-                          messageIndex > 0 &&
-                          group.messages[messageIndex - 1].personaId ===
-                            message.personaId;
+                          messageIndex > 0 && group.messages[messageIndex - 1].personaId === message.personaId
 
                         return (
                           <motion.div
                             key={message.id}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className={`flex ${
-                              isPersona1 ? "justify-end" : "justify-start"
-                            }`}
+                            className={`flex ${isPersona1 ? "justify-end" : "justify-start"}`}
                           >
-                            <div
-                              className={`flex items-end gap-2 max-w-[80%] ${
-                                isPersona1 ? "flex-row-reverse" : ""
-                              }`}
-                            >
+                            <div className={`flex items-end gap-2 max-w-[80%] ${isPersona1 ? "flex-row-reverse" : ""}`}>
                               {!isConsecutive && (
                                 <Avatar className="h-8 w-8 mb-1 flex-shrink-0">
-                                  <AvatarImage
-                                    src={persona.avatar}
-                                    alt={persona.name}
-                                  />
-                                  <AvatarFallback className={persona.color}>
-                                    {persona.name.charAt(0)}
-                                  </AvatarFallback>
+                                  <AvatarImage src={persona.avatar} alt={persona.name} />
+                                  <AvatarFallback className={persona.color}>{persona.name.charAt(0)}</AvatarFallback>
                                 </Avatar>
                               )}
-                              <div
-                                className={`flex flex-col ${
-                                  isConsecutive
-                                    ? isPersona1
-                                      ? "mr-8"
-                                      : "ml-8"
-                                    : ""
-                                }`}
-                              >
+                              <div className={`flex flex-col ${isConsecutive ? (isPersona1 ? "mr-8" : "ml-8") : ""}`}>
                                 <div
-                                  className={`p-3 ${
-                                    isPersona1
-                                      ? "rounded-t-2xl rounded-bl-2xl"
-                                      : "rounded-t-2xl rounded-br-2xl"
-                                  } 
-                                    ${
-                                      isConsecutive
-                                        ? isPersona1
-                                          ? "rounded-tr-md"
-                                          : "rounded-tl-md"
-                                        : ""
-                                    } 
-                                    shadow-sm ${persona.bgColor} ${
-                                    persona.textColor
-                                  } dark:opacity-90`}
+                                  className={`p-3 ${isPersona1 ? "rounded-t-2xl rounded-bl-2xl" : "rounded-t-2xl rounded-br-2xl"} 
+                                    ${isConsecutive ? (isPersona1 ? "rounded-tr-md" : "rounded-tl-md") : ""} 
+                                    shadow-sm ${persona.bgColor} ${persona.textColor} dark:opacity-90`}
                                 >
                                   {message.text}
                                 </div>
                                 <span
-                                  className={`text-xs text-gray-500 dark:text-gray-400 mt-1 ${
-                                    isPersona1 ? "text-right" : "text-left"
-                                  }`}
+                                  className={`text-xs text-gray-500 dark:text-gray-400 mt-1 ${isPersona1 ? "text-right" : "text-left"}`}
                                 >
-                                  {message.timestamp.toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
+                                  {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                 </span>
                               </div>
                             </div>
                           </motion.div>
-                        );
+                        )
                       })}
                     </div>
                   </div>
@@ -570,27 +475,15 @@ export default function ChatApp() {
 
         {/* Quick persona switcher */}
         <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-          <motion.div
-            className="flex items-center justify-between"
-            whileHover={{ scale: 1.01 }}
-          >
+          <motion.div className="flex items-center justify-between" whileHover={{ scale: 1.01 }}>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium dark:text-gray-300">
-                Chatting as:
-              </span>
+              <span className="text-sm font-medium dark:text-gray-300">Chatting as:</span>
               <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-full px-2 py-1">
                 <Avatar className="h-5 w-5 mr-1">
-                  <AvatarImage
-                    src={currentPersona.avatar}
-                    alt={currentPersona.name}
-                  />
-                  <AvatarFallback className={currentPersona.color}>
-                    {currentPersona.name.charAt(0)}
-                  </AvatarFallback>
+                  <AvatarImage src={currentPersona.avatar} alt={currentPersona.name} />
+                  <AvatarFallback className={currentPersona.color}>{currentPersona.name.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <span className="text-xs font-bold dark:text-gray-200">
-                  {currentPersona.name}
-                </span>
+                <span className="text-xs font-bold dark:text-gray-200">{currentPersona.name}</span>
               </div>
             </div>
             <Button
@@ -610,13 +503,8 @@ export default function ChatApp() {
         <CardFooter className="p-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <div className="flex w-full items-center space-x-2">
             <Avatar className="h-8 w-8 flex-shrink-0 ring-2 ring-white dark:ring-gray-700">
-              <AvatarImage
-                src={currentPersona.avatar}
-                alt={currentPersona.name}
-              />
-              <AvatarFallback className={currentPersona.color}>
-                {currentPersona.name.charAt(0)}
-              </AvatarFallback>
+              <AvatarImage src={currentPersona.avatar} alt={currentPersona.name} />
+              <AvatarFallback className={currentPersona.color}>{currentPersona.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <Input
               ref={inputRef} // Add the ref to the input
@@ -626,8 +514,8 @@ export default function ChatApp() {
               className="flex-1 rounded-full dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
+                  e.preventDefault()
+                  handleSendMessage()
                 }
               }}
             />
@@ -659,19 +547,12 @@ export default function ChatApp() {
             <TabsContent value="profiles" className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
                 {personas.map((persona) => (
-                  <div
-                    key={persona.id}
-                    className="border rounded-lg p-3 flex flex-col items-center"
-                  >
+                  <div key={persona.id} className="border rounded-lg p-3 flex flex-col items-center">
                     <Avatar className="h-16 w-16 mb-2">
                       <AvatarImage src={persona.avatar} alt={persona.name} />
-                      <AvatarFallback className={persona.color}>
-                        {persona.name.charAt(0)}
-                      </AvatarFallback>
+                      <AvatarFallback className={persona.color}>{persona.name.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <span className="font-medium text-center">
-                      {persona.name}
-                    </span>
+                    <span className="font-medium text-center">{persona.name}</span>
                     <Button
                       variant="outline"
                       size="sm"
@@ -689,9 +570,7 @@ export default function ChatApp() {
             <TabsContent value="chat" className="space-y-4 mt-4">
               <div className="space-y-3">
                 <div className="p-3 bg-amber-50 dark:bg-amber-950 rounded-md border border-amber-200 dark:border-amber-800">
-                  <h3 className="font-medium text-amber-800 dark:text-amber-300 mb-1">
-                    Chat History
-                  </h3>
+                  <h3 className="font-medium text-amber-800 dark:text-amber-300 mb-1">Chat History</h3>
                   <p className="text-sm text-amber-700 dark:text-amber-400 mb-2">
                     This will delete all your conversation messages.
                   </p>
@@ -706,18 +585,11 @@ export default function ChatApp() {
                 </div>
 
                 <div className="p-3 bg-red-50 dark:bg-red-950 rounded-md border border-red-200 dark:border-red-800">
-                  <h3 className="font-medium text-red-800 dark:text-red-300 mb-1">
-                    Reset Everything
-                  </h3>
+                  <h3 className="font-medium text-red-800 dark:text-red-300 mb-1">Reset Everything</h3>
                   <p className="text-sm text-red-700 dark:text-red-400 mb-2">
-                    This will delete all messages and reset both personas to
-                    default settings.
+                    This will delete all messages and reset both personas to default settings.
                   </p>
-                  <Button
-                    variant="destructive"
-                    className="w-full"
-                    onClick={() => setResetConfirmOpen(true)}
-                  >
+                  <Button variant="destructive" className="w-full" onClick={() => setResetConfirmOpen(true)}>
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Reset Everything
                   </Button>
@@ -740,9 +612,7 @@ export default function ChatApp() {
               <div className="relative group">
                 <Avatar className="h-24 w-24 ring-4 ring-primary/20">
                   <AvatarImage src={editAvatar} alt={editName} />
-                  <AvatarFallback className={editingPersona.color}>
-                    {editName.charAt(0)}
-                  </AvatarFallback>
+                  <AvatarFallback className={editingPersona.color}>{editName.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                   <label
@@ -767,11 +637,7 @@ export default function ChatApp() {
               <div className="w-full">
                 <Label className="block mb-2">Profile Picture</Label>
                 <div className="flex flex-wrap gap-2 justify-center">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setEditAvatar(generateRandomAvatar())}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => setEditAvatar(generateRandomAvatar())}>
                     <RefreshCw className="h-3 w-3 mr-1" />
                     Random Avatar
                   </Button>
@@ -787,13 +653,13 @@ export default function ChatApp() {
                       accept="image/*"
                       className="hidden"
                       onChange={async (e) => {
-                        const file = e.target.files[0];
+                        const file = e.target.files[0]
                         if (file) {
                           try {
-                            const dataUrl = await handleImageUpload(file);
-                            setEditAvatar(dataUrl);
+                            const dataUrl = await handleImageUpload(file)
+                            setEditAvatar(dataUrl)
                           } catch (error) {
-                            console.error("Error uploading image:", error);
+                            console.error("Error uploading image:", error)
                           }
                         }
                       }}
@@ -826,13 +692,13 @@ export default function ChatApp() {
                       capture="user"
                       className="hidden"
                       onChange={async (e) => {
-                        const file = e.target.files[0];
+                        const file = e.target.files[0]
                         if (file) {
                           try {
-                            const dataUrl = await handleImageUpload(file);
-                            setEditAvatar(dataUrl);
+                            const dataUrl = await handleImageUpload(file)
+                            setEditAvatar(dataUrl)
                           } catch (error) {
-                            console.error("Error capturing image:", error);
+                            console.error("Error capturing image:", error)
                           }
                         }
                       }}
@@ -856,9 +722,7 @@ export default function ChatApp() {
       <Dialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-red-600 dark:text-red-400">
-              Reset Everything?
-            </DialogTitle>
+            <DialogTitle className="text-red-600 dark:text-red-400">Reset Everything?</DialogTitle>
           </DialogHeader>
 
           <div className="py-4">
@@ -869,16 +733,11 @@ export default function ChatApp() {
               <li>Reset both personas to default names and avatars</li>
               <li>Clear all customizations</li>
             </ul>
-            <p className="mt-3 text-sm font-medium text-red-600 dark:text-red-400">
-              This action cannot be undone.
-            </p>
+            <p className="mt-3 text-sm font-medium text-red-600 dark:text-red-400">This action cannot be undone.</p>
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setResetConfirmOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setResetConfirmOpen(false)}>
               Cancel
             </Button>
             <Button variant="destructive" onClick={resetEverything}>
@@ -888,5 +747,6 @@ export default function ChatApp() {
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }
+
