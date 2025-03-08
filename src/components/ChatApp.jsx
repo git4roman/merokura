@@ -318,7 +318,7 @@ export default function ChatApp() {
           className={`p-4 flex items-center justify-between bg-gradient-to-r ${currentPersona.gradient} text-white`}
         >
           <div className="flex items-center">
-            <span className="font-medium text-lg">Dual Chat</span>
+            <span className="font-medium text-lg">MeroKura</span>
             <div className="ml-2 text-xs bg-white/20 px-2 py-1 rounded-full">
               Press Alt+S to switch
             </div>
