@@ -44,8 +44,8 @@ export default function ChatApp() {
     return [
       {
         id: "persona1",
-        name: "Alex",
-        avatar: "/placeholder.svg?height=40&width=40&text=A",
+        name: "Dumb",
+        avatar: "/placeholder-vibrant.svg",
         color: "bg-indigo-500",
         bgColor: "bg-indigo-50",
         textColor: "text-indigo-800",
@@ -53,8 +53,8 @@ export default function ChatApp() {
       },
       {
         id: "persona2",
-        name: "Taylor",
-        avatar: "/placeholder.svg?height=40&width=40&text=T",
+        name: "Prime",
+        avatar: "/placeholder-normal.svg",
         color: "bg-rose-500",
         bgColor: "bg-rose-50",
         textColor: "text-rose-800",
@@ -75,6 +75,8 @@ export default function ChatApp() {
   const [editAvatar, setEditAvatar] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  // Add a new state for the reset confirmation dialog
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
 
   // Refs for scrolling to bottom of messages and focusing input
   const messagesEndRef = useRef(null);
@@ -178,10 +180,46 @@ export default function ChatApp() {
     }, 150);
   };
 
-  // Clear all messages
+  // Modify the clearMessages function to only clear messages
   const clearMessages = () => {
     setMessages([]);
     localStorage.removeItem("chatMessages");
+    setSettingsOpen(false);
+  };
+
+  // Add a new function to reset everything (messages and personas)
+  const resetEverything = () => {
+    // Clear messages
+    setMessages([]);
+    localStorage.removeItem("chatMessages");
+
+    // Reset personas to defaults
+    const defaultPersonas = [
+      {
+        id: "persona1",
+        name: "Dumb",
+        avatar: "/placeholder-vibrant.svg",
+        color: "bg-indigo-500",
+        bgColor: "bg-indigo-50",
+        textColor: "text-indigo-800",
+        gradient: "from-indigo-500 to-purple-500",
+      },
+      {
+        id: "persona2",
+        name: "Prime",
+        avatar: "/placeholder-normal.svg",
+        color: "bg-rose-500",
+        bgColor: "bg-rose-50",
+        textColor: "text-rose-800",
+        gradient: "from-rose-500 to-pink-500",
+      },
+    ];
+
+    setPersonas(defaultPersonas);
+    localStorage.setItem("chatPersonas", JSON.stringify(defaultPersonas));
+
+    // Close dialogs
+    setResetConfirmOpen(false);
     setSettingsOpen(false);
   };
 
@@ -318,9 +356,9 @@ export default function ChatApp() {
           className={`p-4 flex items-center justify-between bg-gradient-to-r ${currentPersona.gradient} text-white`}
         >
           <div className="flex items-center">
-            <span className="font-medium text-lg">MeroKura</span>
+            <span className="font-medium text-lg">meroKura</span>
             <div className="ml-2 text-xs bg-white/20 px-2 py-1 rounded-full">
-              Press Alt+S to switch
+              Press Ctrl+S to switch
             </div>
           </div>
 
@@ -649,15 +687,41 @@ export default function ChatApp() {
             </TabsContent>
 
             <TabsContent value="chat" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Button
-                  variant="destructive"
-                  className="w-full"
-                  onClick={clearMessages}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Clear Chat History
-                </Button>
+              <div className="space-y-3">
+                <div className="p-3 bg-amber-50 dark:bg-amber-950 rounded-md border border-amber-200 dark:border-amber-800">
+                  <h3 className="font-medium text-amber-800 dark:text-amber-300 mb-1">
+                    Chat History
+                  </h3>
+                  <p className="text-sm text-amber-700 dark:text-amber-400 mb-2">
+                    This will delete all your conversation messages.
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="w-full border-amber-300 dark:border-amber-700"
+                    onClick={clearMessages}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
+                    Clear Chat History
+                  </Button>
+                </div>
+
+                <div className="p-3 bg-red-50 dark:bg-red-950 rounded-md border border-red-200 dark:border-red-800">
+                  <h3 className="font-medium text-red-800 dark:text-red-300 mb-1">
+                    Reset Everything
+                  </h3>
+                  <p className="text-sm text-red-700 dark:text-red-400 mb-2">
+                    This will delete all messages and reset both personas to
+                    default settings.
+                  </p>
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    onClick={() => setResetConfirmOpen(true)}
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Reset Everything
+                  </Button>
+                </div>
               </div>
             </TabsContent>
           </Tabs>
@@ -784,6 +848,42 @@ export default function ChatApp() {
               Cancel
             </Button>
             <Button onClick={savePersona}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reset Confirmation Dialog */}
+      <Dialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600 dark:text-red-400">
+              Reset Everything?
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="py-4">
+            <p className="mb-2">Are you sure you want to reset everything?</p>
+            <p className="text-sm text-muted-foreground">This will:</p>
+            <ul className="list-disc pl-5 text-sm text-muted-foreground mt-1 space-y-1">
+              <li>Delete all chat messages</li>
+              <li>Reset both personas to default names and avatars</li>
+              <li>Clear all customizations</li>
+            </ul>
+            <p className="mt-3 text-sm font-medium text-red-600 dark:text-red-400">
+              This action cannot be undone.
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setResetConfirmOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={resetEverything}>
+              Reset Everything
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
