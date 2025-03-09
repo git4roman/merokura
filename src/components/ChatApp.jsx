@@ -326,10 +326,10 @@ export default function ChatApp() {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      <div className="w-full h-full max-w-md mx-auto flex flex-col bg-white dark:bg-gray-800 shadow-xl">
+      <div className="w-full h-full max-w-md mx-auto flex flex-col bg-white dark:bg-gray-800 shadow-xl relative">
         {/* Fixed Header */}
         <div
-          className={`sticky top-0 z-10 p-4 flex items-center justify-between bg-gradient-to-r ${currentPersona.gradient} text-white`}
+          className={`sticky top-0 z-30 p-4 flex items-center justify-between bg-gradient-to-r ${currentPersona.gradient} text-white`}
         >
           <div className="flex items-center">
             <span className="font-medium text-lg">Dual Chat</span>
@@ -379,6 +379,7 @@ export default function ChatApp() {
             scrollbarWidth: "none",
             msOverflowStyle: "none",
             WebkitOverflowScrolling: "touch",
+            paddingBottom: "10px",
           }}
         >
           <AnimatePresence>
@@ -484,7 +485,7 @@ export default function ChatApp() {
         </div>
 
         {/* Quick persona switcher - Fixed at bottom */}
-        <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 z-20">
           <div className="px-4 py-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium dark:text-gray-300">Chatting as:</span>
@@ -510,7 +511,7 @@ export default function ChatApp() {
         </div>
 
         {/* Message input - Fixed at bottom */}
-        <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky bottom-0 z-20">
           <div className="flex w-full items-center space-x-2">
             <Avatar className="h-8 w-8 flex-shrink-0 ring-2 ring-white dark:ring-gray-700">
               <AvatarImage src={currentPersona.avatar} alt={currentPersona.name} />
