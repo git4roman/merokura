@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar"
 import { Button } from "../components/ui/button"
-import { Card, CardContent, CardFooter } from "../components/ui/card"
 import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog"
@@ -55,12 +54,13 @@ export default function ChatApp() {
   const [editAvatar, setEditAvatar] = useState("")
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
-  // Add a new state for the reset confirmation dialog
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false)
+  const [isFocused, setIsFocused] = useState(false)
 
   // Refs for scrolling to bottom of messages and focusing input
   const messagesEndRef = useRef(null)
-  const inputRef = useRef(null) // New ref for the input field
+  const inputRef = useRef(null)
+  const chatContainerRef = useRef(null)
 
   // Save personas to localStorage when they change
   useEffect(() => {
@@ -107,7 +107,9 @@ export default function ChatApp() {
 
   // Scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
+    }
   }, [messages])
 
   // Add keyboard shortcuts
@@ -323,15 +325,15 @@ export default function ChatApp() {
   const messageGroups = groupMessagesByDate()
 
   return (
-    <div
-      className={`fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300`}
-    >
-      <Card className="w-full h-full max-w-md mx-auto shadow-xl overflow-hidden flex flex-col rounded-xl dark:bg-gray-800 dark:border-gray-700">
-        {/* Header with gradient background */}
-        <div className={`p-4 flex items-center justify-between bg-gradient-to-r ${currentPersona.gradient} text-white`}>
+    <div className="fixed inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      <div className="w-full h-full max-w-md mx-auto flex flex-col bg-white dark:bg-gray-800 shadow-xl">
+        {/* Fixed Header */}
+        <div
+          className={`sticky top-0 z-10 p-4 flex items-center justify-between bg-gradient-to-r ${currentPersona.gradient} text-white`}
+        >
           <div className="flex items-center">
             <span className="font-medium text-lg">Dual Chat</span>
-            <div className="flex ml-2 gap-1">
+            <div className="hidden md:flex ml-2 gap-1">
               <div className="text-xs bg-white/20 px-2 py-1 rounded-full">Ctrl+S: switch</div>
               <div className="text-xs bg-white/20 px-2 py-1 rounded-full">Alt+S: clear chat</div>
             </div>
@@ -369,8 +371,16 @@ export default function ChatApp() {
           </div>
         </div>
 
-        {/* Chat messages */}
-        <CardContent className="flex-1 p-0 overflow-y-auto bg-gray-50 dark:bg-gray-800">
+        {/* Chat messages - Flex-grow to take available space */}
+        <div
+          ref={chatContainerRef}
+          className="flex-grow overflow-y-auto bg-gray-50 dark:bg-gray-800 scrollbar-hide"
+          style={{
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            WebkitOverflowScrolling: "touch",
+          }}
+        >
           <AnimatePresence>
             {messages.length === 0 ? (
               <motion.div
@@ -413,7 +423,7 @@ export default function ChatApp() {
                 </div>
               </motion.div>
             ) : (
-              <div className="py-4 px-3">
+              <div className="py-4 px-3 min-h-full">
                 {messageGroups.map((group, groupIndex) => (
                   <div key={group.date.toISOString()} className="mb-6">
                     <div className="flex justify-center mb-4">
@@ -471,11 +481,11 @@ export default function ChatApp() {
               </div>
             )}
           </AnimatePresence>
-        </CardContent>
+        </div>
 
-        {/* Quick persona switcher */}
-        <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-          <motion.div className="flex items-center justify-between" whileHover={{ scale: 1.01 }}>
+        {/* Quick persona switcher - Fixed at bottom */}
+        <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+          <div className="px-4 py-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium dark:text-gray-300">Chatting as:</span>
               <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-full px-2 py-1">
@@ -496,20 +506,22 @@ export default function ChatApp() {
               <RefreshCw className="h-3 w-3" />
               <span>Switch to {otherPersona.name}</span>
             </Button>
-          </motion.div>
+          </div>
         </div>
 
-        {/* Message input */}
-        <CardFooter className="p-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        {/* Message input - Fixed at bottom */}
+        <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <div className="flex w-full items-center space-x-2">
             <Avatar className="h-8 w-8 flex-shrink-0 ring-2 ring-white dark:ring-gray-700">
               <AvatarImage src={currentPersona.avatar} alt={currentPersona.name} />
               <AvatarFallback className={currentPersona.color}>{currentPersona.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <Input
-              ref={inputRef} // Add the ref to the input
+              ref={inputRef}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
               placeholder={`Message as ${currentPersona.name}...`}
               className="flex-1 rounded-full dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               onKeyDown={(e) => {
@@ -528,8 +540,8 @@ export default function ChatApp() {
               <Send className="h-4 w-4" />
             </Button>
           </div>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
 
       {/* Settings Dialog */}
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
